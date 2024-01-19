@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: qUgeyvYnOKyMy9HRpGMauKlJdsyq1QdIJUtp8Hz6HarKKCIiVm7m3ITHsBFQSMkEcrGXQy4FNHFX6zKq5NTzysbE0EVJnh3HZwl6DkAloQu7GQ1NZVVNnYEFpkAcxdun
+      ACCEPT_EULA: "Y"
+
+  user-manager-api:
+    image: user-manager-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./API/Dockerfile
+    environment:
+      - ConnectionStrings__UserDatabase=Server=db;Database=UserManagement;Trusted_Connection=False;User Id=sa;Password=qUgeyvYnOKyMy9HRpGMauKlJdsyq1QdIJUtp8Hz6HarKKCIiVm7m3ITHsBFQSMkEcrGXQy4FNHFX6zKq5NTzysbE0EVJnh3HZwl6DkAloQu7GQ1NZVVNnYEFpkAcxdun;MultipleActiveResultSets=true;Integrated Security=false;TrustServerCertificate=true
+      - Logging__LogLevel__Default=Information
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  user-manager-front-end:
+    image: user-manager-front-end
+    restart: unless-stopped
+    build:
+      context: ./Client
+      dockerfile: ./Dockerfile
+      args:
+        VITE_APP_API_URL: http://localhost:8080/api
+    ports:
+      - "8081:80"
+    depends_on:
+      - user-manager-api
