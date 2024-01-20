@@ -5,7 +5,12 @@ namespace API
 {
     public class UserContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+
+        public UserContext()
+        {
+            
+        }
 
         public UserContext(DbContextOptions<UserContext> dbContextOptions) : base(dbContextOptions)
         {

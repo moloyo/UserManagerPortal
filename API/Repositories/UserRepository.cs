@@ -22,9 +22,12 @@ namespace API.Repositories
         public async Task DeleteAsync(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()
@@ -32,14 +35,14 @@ namespace API.Repositories
             return await _context.Users.ToListAsync();
         }
 
-        public async Task<User> GetAsync(Guid id)
+        public async Task<User?> GetAsync(Guid id)
         {
             return await _context.Users.FindAsync(id);
         }
 
         public async Task UpdateAsync(User user)
         {
-            _context.Entry(user).State = EntityState.Modified;
+            _context.Update(user);
 
             await _context.SaveChangesAsync();
         }
