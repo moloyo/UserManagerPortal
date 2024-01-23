@@ -3,18 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API
 {
-    public class UserContext : DbContext
+    public class UserContext(DbContextOptions<UserContext> dbContextOptions) : DbContext(dbContextOptions)
     {
         public virtual DbSet<User> Users { get; set; }
-
-        public UserContext()
-        {
-            
-        }
-
-        public UserContext(DbContextOptions<UserContext> dbContextOptions) : base(dbContextOptions)
-        {
-            
-        }
     }
 }

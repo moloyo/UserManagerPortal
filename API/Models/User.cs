@@ -8,8 +8,7 @@ namespace API.Models
         public Guid? Id { get; set; }
 
         [Required]
-        [MinLength(1)]
-        [MaxLength(50)]
+        [Length(1, 50)]
         public string FullName { get; set; }
 
         [Required]
@@ -17,8 +16,8 @@ namespace API.Models
         public string Email { get; set; }
 
         [Required]
-        [Range(0, int.MaxValue)]
-        public int Credits { get; set; }
+        [Range(0, uint.MaxValue)]
+        public uint Credits { get; set; }
 
     }
 }

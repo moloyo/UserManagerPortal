@@ -1,26 +1,18 @@
 ﻿using API.Models;
 using API.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController(IUserRepository userRepository) : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-
-        public UsersController(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
-
         // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            var users = await _userRepository.GetAllAsync();
+            var users = await userRepository.GetAllAsync();
 
             return Ok(users);
         }
@@ -29,12 +21,10 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(Guid id)
         {
-            var user = await _userRepository.GetAsync(id);
+            var user = await userRepository.GetAsync(id);
 
             if (user == null)
-            {
                 return NotFound();
-            }
 
             return Ok(user);
         }
@@ -45,16 +35,12 @@ namespace API.Controllers
         public async Task<IActionResult> PutUser(Guid id, User user)
         {
             if (id != user.Id)
-            {
                 return BadRequest();
-            }
 
-            if (!await _userRepository.UserExistsAsync(id))
-            {
+            if (!await userRepository.UserExistsAsync(id))
                 return NotFound();
-            }
 
-            await _userRepository.UpdateAsync(user);
+            await userRepository.UpdateAsync(user);
 
             return NoContent();
         }
@@ -64,7 +50,7 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            await _userRepository.CreateAsync(user);
+            await userRepository.CreateAsync(user);
 
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
@@ -73,13 +59,10 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-
-            if (!await _userRepository.UserExistsAsync(id))
-            {
+            if (!await userRepository.UserExistsAsync(id))
                 return NotFound();
-            }
 
-            await _userRepository.DeleteAsync(id);
+            await userRepository.DeleteAsync(id);
 
             return NoContent();
         }

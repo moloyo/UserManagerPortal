@@ -1,9 +1,6 @@
 
 using API.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using System.Configuration;
 
 namespace API
 {
@@ -22,20 +19,17 @@ namespace API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            Console.WriteLine("AAAAA");
-            Console.WriteLine(builder.Configuration.GetConnectionString("UserDatabase"));
-
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (true /*app.Environment.IsDevelopment()*/)
+            if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            var urlAceptadas = builder.Configuration.GetSection("AllowedHosts").Value?.Split(",");
-            app.UseCors(builder => builder.WithOrigins(urlAceptadas ?? ["*"])
+            var acceptedUrls = builder.Configuration.GetSection("AllowedHosts").Value?.Split(",");
+            app.UseCors(builder => builder.WithOrigins(acceptedUrls ?? ["*"])
                                   .AllowAnyHeader()
                                   .AllowAnyMethod()
                                   );
