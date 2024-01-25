@@ -1,7 +1,7 @@
 ﻿using API.Controllers;
-using API.Models;
-using API.Repositories;
+using DataAccessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Models;
 
 namespace API.Test.Controllers
 {

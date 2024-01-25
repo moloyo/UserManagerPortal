@@ -1,6 +1,6 @@
-﻿using API.Models;
+﻿using Models;
 
-namespace API.Repositories
+namespace DataAccessLayer.Interfaces
 {
     public interface IUserRepository
     {

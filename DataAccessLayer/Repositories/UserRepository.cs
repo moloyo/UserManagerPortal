@@ -1,7 +1,8 @@
-﻿using API.Models;
+﻿using Models;
 using Microsoft.EntityFrameworkCore;
+using DataAccessLayer.Interfaces;
 
-namespace API.Repositories
+namespace DataAccessLayer.Repositories
 {
     public class UserRepository(UserContext context) : IUserRepository
     {

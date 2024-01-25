@@ -1,8 +1,9 @@
-﻿using API.Models;
-using API.Repositories;
+﻿using DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Models;
+using Moq;
 
-namespace API.Test.Repositories
+namespace DataAccessLayer.Test.Repositories
 {
     public class UserRepositoryTest
     {
