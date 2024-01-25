@@ -1,7 +1,7 @@
+using Commands.User;
 using DataAccessLayer;
-using DataAccessLayer.Interfaces;
-using DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Queries.User;
 
 namespace API
 {
@@ -10,15 +10,19 @@ namespace API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var services = builder.Services;
 
+            services.AddDbContext<UserContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UserDatabase")));
+            
             // Add services to the container.
+            services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssemblies(typeof(GetAllUsersQuery).Assembly, typeof(CreateUserCommand).Assembly)
+            );
 
-            builder.Services.AddDbContext<UserContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UserDatabase")));
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddControllers();
+            services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
 
             var app = builder.Build();
 

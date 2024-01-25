@@ -1,32 +1,33 @@
-﻿using DataAccessLayer.Interfaces;
+﻿using Commands.User;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using Queries.User;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController(IUserRepository userRepository) : ControllerBase
+    public class UsersController(IMediator mediator) : ControllerBase
     {
         // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            var users = await userRepository.GetAllAsync();
+            var query = new GetAllUsersQuery();
+            var response = await mediator.Send(query);
 
-            return Ok(users);
+            return Ok(response);
         }
 
         // GET: api/Users/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<ActionResult<User>> GetUser(Guid id)
         {
-            var user = await userRepository.GetAsync(id);
+            var query = new GetUserByIdQuery() { Id = id };
+            var response = await mediator.Send(query);
 
-            if (user == null)
-                return NotFound();
-
-            return Ok(user);
+            return response is null ? NotFound() : Ok(response);
         }
 
         // PUT: api/Users/5
@@ -34,15 +35,17 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(Guid id, User user)
         {
-            if (id != user.Id)
-                return BadRequest();
+            var command = new UpdateUserCommand()
+            {
+                Id = id,
+                FullName  = user.FullName,
+                Email = user.Email,
+                Credits = user.Credits
+            };
 
-            if (!await userRepository.UserExistsAsync(id))
-                return NotFound();
+            var response = await mediator.Send(command);
 
-            await userRepository.UpdateAsync(user);
-
-            return NoContent();
+            return response is not null ? Ok(response) : NotFound();
         }
 
         // POST: api/Users
@@ -50,21 +53,30 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            await userRepository.CreateAsync(user);
+            var command = new CreateUserCommand()
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                Credits  = user.Credits
+            };
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            var response = await mediator.Send(command);
+
+            return CreatedAtAction(nameof(GetUser), response);
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            if (!await userRepository.UserExistsAsync(id))
-                return NotFound();
+            var command = new DeleteUserCommand()
+            {
+                Id = id
+            };
 
-            await userRepository.DeleteAsync(id);
+            var response = await mediator.Send(command);
 
-            return NoContent();
+            return response is not null ? NoContent() : NotFound();
         }
     }
 }
