@@ -45,7 +45,7 @@ namespace API.Controllers
 
             var response = await mediator.Send(command);
 
-            return response is not null ? Ok(response) : NotFound();
+            return response is not null ? NoContent() : NotFound();
         }
 
         // POST: api/Users

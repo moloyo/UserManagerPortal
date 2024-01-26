@@ -39,6 +39,7 @@ namespace API
                                   .AllowAnyMethod()
                                   );
 
+
             app.UseHttpsRedirection();
 
             app.UseAuthorization();

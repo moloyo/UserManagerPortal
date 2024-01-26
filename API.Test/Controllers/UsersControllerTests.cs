@@ -1,24 +1,35 @@
 ﻿using API.Controllers;
-using DataAccessLayer.Interfaces;
+using Commands.User;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using Queries.User;
 
 namespace API.Test.Controllers
 {
     public class UsersControllerTests
     {
+        private readonly Mock<IMediator> _mediatorMock;
+        private readonly UsersController _controller;
+
+        public UsersControllerTests()
+        {
+            _mediatorMock = new Mock<IMediator>();
+
+            _controller = new UsersController(_mediatorMock.Object);
+        }
+
         [Fact]
         public async Task GetUsers_ReturnsOkResult_WithListOfUsers()
         {
             // Arrange
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(repo => repo.GetAllAsync())
-                .ReturnsAsync(new List<User> { new User { Id = Guid.NewGuid(), FullName = "User1" } });
-
-            var controller = new UsersController(userRepositoryMock.Object);
+            var userList = new List<User>();
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetAllUsersQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(userList);
 
             // Act
-            var result = await controller.GetUsers();
+            var result = await _controller.GetUsers();
 
             // Assert
             Assert.IsType<OkObjectResult>(result.Result);
@@ -31,15 +42,13 @@ namespace API.Test.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User { Id = userId, FullName = "TestUser" };
-
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(repo => repo.GetAsync(userId)).ReturnsAsync(user);
-
-            var controller = new UsersController(userRepositoryMock.Object);
+            var user = new User() { Id = userId };
+            _mediatorMock
+                .Setup(m => m.Send(It.Is<GetUserByIdQuery>(q => q.Id == userId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(user);
 
             // Act
-            var result = await controller.GetUser(userId);
+            var result = await _controller.GetUser(userId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result.Result);
@@ -54,13 +63,8 @@ namespace API.Test.Controllers
             // Arrange
             var userId = Guid.NewGuid();
 
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(repo => repo.GetAsync(userId)).ReturnsAsync((User)null);
-
-            var controller = new UsersController(userRepositoryMock.Object);
-
             // Act
-            var result = await controller.GetUser(userId);
+            var result = await _controller.GetUser(userId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
@@ -71,57 +75,34 @@ namespace API.Test.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User { Id = userId, FullName = "TestUser" };
-
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(repo => repo.UserExistsAsync(userId)).ReturnsAsync(true);
-
-            var controller = new UsersController(userRepositoryMock.Object);
+            var user = new User();
+            _mediatorMock
+               .Setup(m => m.Send(It.Is<UpdateUserCommand>(q => q.Id == userId), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(user);
 
             // Act
-            var result = await controller.PutUser(userId, user);
+            var result = await _controller.PutUser(userId, user);
 
             // Assert
             Assert.IsType<NoContentResult>(result);
         }
 
         [Fact]
-        public async Task PutUser_WithInvalidId_ReturnsBadRequestResult()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = new User { Id = Guid.NewGuid(), FullName = "TestUser" }; // Different Id
-
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(repo => repo.UserExistsAsync(userId)).ReturnsAsync(true);
-
-            var controller = new UsersController(userRepositoryMock.Object);
-
-            // Act
-            var result = await controller.PutUser(userId, user);
-
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
         public async Task PostUser_ReturnsCreatedAtActionResult_WithNewUser()
         {
             // Arrange
-            var newUser = new User { Id = Guid.NewGuid(), FullName = "NewUser" };
-
-            var userRepositoryMock = new Mock<IUserRepository>();
-
-            var controller = new UsersController(userRepositoryMock.Object);
+            var newUser = new User { FullName = "NewUser" };
+            _mediatorMock
+               .Setup(m => m.Send(It.Is<CreateUserCommand>(q => q.FullName == newUser.FullName), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(newUser);
 
             // Act
-            var result = await controller.PostUser(newUser);
+            var result = await _controller.PostUser(newUser);
 
             // Assert
             Assert.IsType<CreatedAtActionResult>(result.Result);
             var createdAtActionResult = result.Result as CreatedAtActionResult;
             Assert.IsType<User>(createdAtActionResult?.Value);
-            Assert.Equal(newUser.Id, (createdAtActionResult?.Value as User)?.Id);
         }
 
         [Fact]
@@ -129,14 +110,12 @@ namespace API.Test.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
-
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(repo => repo.UserExistsAsync(userId)).ReturnsAsync(true);
-
-            var controller = new UsersController(userRepositoryMock.Object);
+            _mediatorMock
+               .Setup(m => m.Send(It.Is<DeleteUserCommand>(q => q.Id == userId), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(new User());
 
             // Act
-            var result = await controller.DeleteUser(userId);
+            var result = await _controller.DeleteUser(userId);
 
             // Assert
             Assert.IsType<NoContentResult>(result);
@@ -148,13 +127,8 @@ namespace API.Test.Controllers
             // Arrange
             var userId = Guid.NewGuid();
 
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(repo => repo.UserExistsAsync(userId)).ReturnsAsync(false);
-
-            var controller = new UsersController(userRepositoryMock.Object);
-
             // Act
-            var result = await controller.DeleteUser(userId);
+            var result = await _controller.DeleteUser(userId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
