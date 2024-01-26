@@ -9,13 +9,16 @@ namespace Commands.User.Handlers
         {
             var user = new Models.User
             {
+                Id = Guid.NewGuid(),
                 FullName = request.FullName,
                 Email = request.Email,
                 Credits = request.Credits
             };
 
             context.Users.Add(user);
+
             await context.SaveChangesAsync();
+
             return user;
         }
     }

@@ -13,7 +13,7 @@ namespace API
             var services = builder.Services;
 
             services.AddDbContext<UserContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UserDatabase")));
-            
+
             // Add services to the container.
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssemblies(typeof(GetAllUsersQuery).Assembly, typeof(CreateUserCommand).Assembly)
