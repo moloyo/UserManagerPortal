@@ -8,7 +8,10 @@ namespace Queries.User.Handlers
     {
         public async Task<IEnumerable<Models.User>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            return await context.Users.ToListAsync();
+            return await context.Users
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
         }
     }
 }

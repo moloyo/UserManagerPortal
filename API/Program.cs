@@ -12,6 +12,8 @@ namespace API
             var builder = WebApplication.CreateBuilder(args);
             var services = builder.Services;
 
+            services.AddResponseCaching();
+
             services.AddDbContext<UserContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UserDatabase")));
 
             // Add services to the container.
@@ -46,11 +48,7 @@ namespace API
 
             app.MapControllers();
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<UserContext>();
-                db.Database.Migrate();
-            }
+            app.UseResponseCaching();
 
             app.Run();
         }

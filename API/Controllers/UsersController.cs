@@ -12,9 +12,15 @@ namespace API.Controllers
     {
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        [ResponseCache(VaryByQueryKeys = [nameof(page), nameof(pageSize)], Duration = 10)]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers(int page = 1, int pageSize = 10)
         {
-            var query = new GetAllUsersQuery();
+            var query = new GetAllUsersQuery()
+            {
+                Page = page,
+                PageSize = pageSize
+            };
+
             var response = await mediator.Send(query);
 
             return Ok(response);
@@ -22,6 +28,7 @@ namespace API.Controllers
 
         // GET: api/Users/5
         [HttpGet("{id:guid}")]
+        [ResponseCache(VaryByQueryKeys = [nameof(id)], Duration = 10)]
         public async Task<ActionResult<User>> GetUser(Guid id)
         {
             var query = new GetUserByIdQuery() { Id = id };
@@ -62,7 +69,7 @@ namespace API.Controllers
 
             var response = await mediator.Send(command);
 
-            return CreatedAtAction(nameof(GetUser), response);
+            return CreatedAtAction(nameof(GetUser), new { id = response.Id }, response);
         }
 
         // DELETE: api/Users/5
